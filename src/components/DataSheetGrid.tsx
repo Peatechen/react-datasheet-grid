@@ -23,16 +23,19 @@ import { useEdges } from '../hooks/useEdges'
 import { useDeepEqualState } from '../hooks/useDeepEqualState'
 import { useDocumentEventListener } from '../hooks/useDocumentEventListener'
 import { useGetBoundingClientRect } from '../hooks/useGetBoundingClientRect'
-import { AddRows } from './AddRows'
 import { useDebounceState } from '../hooks/useDebounceState'
 import deepEqual from 'fast-deep-equal'
 import { ContextMenu } from './ContextMenu'
 import { parseData } from '../utils/copyPasting'
+import { keyColumn } from '../columns/keyColumn'
+import { textColumn } from '../columns/textColumn'
 
 const DEFAULT_DATA: any[] = []
 const DEFAULT_COLUMNS: Column<any, any>[] = []
 const DEFAULT_CREATE_ROW: DataSheetGridProps<any>['createRow'] = () => ({})
 const DEFAULT_ON_CHANGE: DataSheetGridProps<any>['onChange'] = () => null
+const DEFAULT_ON_COLUMN_CHANGE: DataSheetGridProps<any>['onColumnChange'] =
+  () => null
 const DEFAULT_DUPLICATE_ROW: DataSheetGridProps<any>['duplicateRow'] = ({
   rowData,
 }) => ({ ...rowData })
@@ -45,12 +48,12 @@ export const DataSheetGrid = React.memo(
     data = DEFAULT_DATA,
     height: maxHeight = 400,
     onChange = DEFAULT_ON_CHANGE,
+    onColumnChange = DEFAULT_ON_COLUMN_CHANGE,
     columns: rawColumns = DEFAULT_COLUMNS,
     rowHeight = 40,
-    headerRowHeight = rowHeight,
+    headerRowHeight = 0,
     gutterColumn,
     stickyRightColumn,
-    addRowsComponent: AddRowsComponent = AddRows,
     createRow = DEFAULT_CREATE_ROW as () => T,
     autoAddRow = false,
     lockRows = false,
@@ -60,6 +63,7 @@ export const DataSheetGrid = React.memo(
     disableContextMenu: disableContextMenuRaw = false,
   }: DataSheetGridProps<T>): JSX.Element => {
     const disableContextMenu = disableContextMenuRaw || lockRows
+
     const columns = useColumns(rawColumns, gutterColumn, stickyRightColumn)
     const hasStickyRightColumn = Boolean(stickyRightColumn)
     const listRef = useRef<VariableSizeList>(null)
@@ -254,6 +258,54 @@ export const DataSheetGrid = React.memo(
       [createRow, lockRows, onChange, setActiveCell, setSelectionCell]
     )
 
+    const insertRowBefore = useCallback(
+      (row: number, count = 1) => {
+        if (lockRows) {
+          return
+        }
+
+        setSelectionCell(null)
+        setEditing(false)
+
+        onChange([
+          ...dataRef.current.slice(0, row),
+          ...new Array(count).fill(0).map(createRow),
+          ...dataRef.current.slice(row),
+        ])
+        setActiveCell((a) => ({ col: a?.col || 0, row: row }))
+      },
+      [createRow, lockRows, onChange, setActiveCell, setSelectionCell]
+    )
+
+    // 插入一列
+    const insertCol = useCallback(
+      (col: number, direction: 'left' | 'right') => {
+        setSelectionCell(null)
+        setEditing(false)
+
+        let index: number
+
+        if (direction === 'left') {
+          index = col + 1
+        } else {
+          index = col + 2
+        }
+
+        const colTitle = `col-${col}-${direction}`
+
+        onColumnChange([
+          ...columns.slice(0, index),
+          {
+            ...keyColumn(colTitle, textColumn),
+            title: colTitle,
+          },
+          ...columns.slice(index),
+        ])
+        setActiveCell(null)
+      },
+      [columns, onColumnChange, setActiveCell, setSelectionCell]
+    )
+
     const duplicateRows = useCallback(
       (rowMin: number, rowMax: number = rowMin) => {
         if (lockRows) {
@@ -388,6 +440,20 @@ export const DataSheetGrid = React.memo(
         ])
       },
       [lockRows, onChange, setActiveCell, setSelectionCell]
+    )
+
+    // 删除列
+    const deleteCol = useCallback(
+      (col) => {
+        setEditing(false)
+        onColumnChange([
+          ...columns.slice(0, col + 1),
+          ...columns.slice(col + 2),
+        ])
+        setSelectionCell(null)
+        setActiveCell(null)
+      },
+      [columns, onColumnChange, setActiveCell, setSelectionCell]
     )
 
     const deleteSelection = useCallback(
@@ -1032,67 +1098,65 @@ export const DataSheetGrid = React.memo(
       const items: ContextMenuItem[] = []
 
       if (selection?.max.row !== undefined) {
-        items.push({
-          type: 'INSERT_ROW_BELLOW',
-          action: () => {
-            setContextMenu(null)
-            insertRowAfter(selection.max.row)
+        //
+      } else if (
+        activeCell?.row !== undefined &&
+        selection?.max.row === undefined
+      ) {
+        items.push(
+          {
+            type: 'INSERT_ROW_ABOVE',
+            action: () => {
+              setContextMenu(null)
+              insertRowBefore(activeCell.row)
+            },
           },
-        })
-      } else if (activeCell?.row !== undefined) {
-        items.push({
-          type: 'INSERT_ROW_BELLOW',
-          action: () => {
-            setContextMenu(null)
-            insertRowAfter(activeCell.row)
+          {
+            type: 'INSERT_ROW_BELLOW',
+            action: () => {
+              setContextMenu(null)
+              insertRowAfter(activeCell.row)
+            },
           },
-        })
+          {
+            type: 'INSERT_COL_LEFT',
+            action: () => {
+              setContextMenu(null)
+              insertCol(activeCell.col, 'left')
+            },
+          },
+          {
+            type: 'INSERT_COL_RIGHT',
+            action: () => {
+              setContextMenu(null)
+              insertCol(activeCell.col, 'right')
+            },
+          }
+        )
       }
 
       if (
         selection?.min.row !== undefined &&
         selection.min.row !== selection.max.row
       ) {
-        items.push({
-          type: 'DUPLICATE_ROWS',
-          fromRow: selection.min.row + 1,
-          toRow: selection.max.row + 1,
-          action: () => {
-            setContextMenu(null)
-            duplicateRows(selection.min.row, selection.max.row)
-          },
-        })
+        //
       } else if (activeCell?.row !== undefined) {
-        items.push({
-          type: 'DUPLICATE_ROW',
-          action: () => {
-            setContextMenu(null)
-            duplicateRows(activeCell.row)
+        items.push(
+          {
+            type: 'DELETE_ROW',
+            action: () => {
+              setContextMenu(null)
+              deleteRows(activeCell.row)
+            },
           },
-        })
-      }
-
-      if (
-        selection?.min.row !== undefined &&
-        selection.min.row !== selection.max.row
-      ) {
-        items.push({
-          type: 'DELETE_ROWS',
-          fromRow: selection.min.row + 1,
-          toRow: selection.max.row + 1,
-          action: () => {
-            setContextMenu(null)
-            deleteRows(selection.min.row, selection.max.row)
-          },
-        })
-      } else if (activeCell?.row !== undefined) {
-        items.push({
-          type: 'DELETE_ROW',
-          action: () => {
-            setContextMenu(null)
-            deleteRows(activeCell.row)
-          },
-        })
+          {
+            type: 'DELETE_COL',
+            action: () => {
+              setContextMenu(null)
+              deleteCol(activeCell.col)
+            },
+          }
+        )
       }
 
       setContextMenuItems(items)
@@ -1104,6 +1168,10 @@ export const DataSheetGrid = React.memo(
       deleteRows,
       duplicateRows,
       insertRowAfter,
+      insertRowBefore,
+      deleteCol,
+      insertCol,
+      activeCell?.col,
       selection?.min.row,
       selection?.max.row,
     ])
@@ -1204,11 +1272,6 @@ export const DataSheetGrid = React.memo(
             })
           }}
         />
-        {!lockRows && (
-          <AddRowsComponent
-            addRows={(count) => insertRowAfter(data.length - 1, count)}
-          />
-        )}
         {contextMenu && contextMenuItems.length > 0 && (
           <ContextMenuComponent
             clientX={contextMenu.x}

@@ -117,7 +117,14 @@ export type AddRowsComponentProps = {
 
 export type ContextMenuItem =
   | {
-      type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW'
+      type:
+        | 'INSERT_ROW_BELLOW'
+        | 'DELETE_ROW'
+        | 'DUPLICATE_ROW'
+        | 'INSERT_ROW_ABOVE'
+        | 'DELETE_COL'
+        | 'INSERT_COL_LEFT'
+        | 'INSERT_COL_RIGHT'
       action: () => void
     }
   | {
@@ -137,6 +144,7 @@ export type ContextMenuComponentProps = {
 export type DataSheetGridProps<T> = {
   data?: T[]
   onChange?: (value: T[]) => void
+  onColumnChange?: (value: Partial<Column<any, any>>[]) => void
   columns?: Partial<Column<T, any>>[]
   gutterColumn?: SimpleColumn<T, any>
   stickyRightColumn?: SimpleColumn<T, any>

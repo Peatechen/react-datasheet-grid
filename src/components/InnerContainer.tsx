@@ -8,7 +8,7 @@ export const InnerContainer = React.forwardRef<
 >(({ children, ...rest }, ref) => {
   return (
     <div ref={ref} {...rest}>
-      <HeaderRow />
+      {/* <HeaderRow /> */}
       {children}
       <SelectionRect />
     </div>

@@ -1,7 +1,7 @@
 {
-  "name": "react-datasheet-grid",
-  "version": "2.0.6",
-  "description": "An Excel-like React component to create beautiful spreadsheets.",
+  "name": "cjs-size-grid",
+  "version": "1.0.2",
+  "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -22,10 +22,10 @@
     "airtable",
     "notion"
   ],
-  "author": "Nicolas Keller (https://github.com/nick-keller)",
+  "author": "",
   "license": "MIT",
-  "repository": "Equify/react-datasheet-grid",
-  "homepage": "https://react-datasheet-grid.netlify.app/",
+  "repository": "",
+  "homepage": "",
   "devDependencies": {
     "@types/jest": "^26.0.24",
     "@types/react": "^17.0.11",

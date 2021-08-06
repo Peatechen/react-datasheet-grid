@@ -2,7 +2,7 @@
   border: solid 1px #e8ebed;
   border-top: none;
   border-left: none;
-  cursor: cell;
+  cursor: default;
   user-select: none;
   box-sizing: border-box;
   color: black;
@@ -80,6 +80,7 @@
   position: absolute;
   border: solid 2px rgb(69, 128, 230);
   box-sizing: border-box;
+  z-index: 999;
   border-radius: 2px;
   transition: all .1s;
   pointer-events: none;

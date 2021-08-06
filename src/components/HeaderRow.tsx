@@ -21,24 +21,22 @@ export const HeaderRow = React.memo(() => {
         height,
       }}
     >
-      {columns.map((column, i) => (
-        <Cell
-          key={i}
-          gutter={i === 0}
-          stickyRight={hasStickyRightColumn && i === columns.length - 1}
-          column={column}
-          className={cx(
-            'dsg-cell-header',
-            activeColMin !== undefined &&
-              activeColMax !== undefined &&
-              activeColMin <= i - 1 &&
-              activeColMax >= i - 1 &&
-              'dsg-cell-header-active'
-          )}
-        >
-          {column.title}
-        </Cell>
-      ))}
+      {columns.map((column, i) => {
+        if (i === 0) {
+          return <div style={{ display: 'none' }}></div>
+        }
+        return (
+          <Cell
+            key={i}
+            gutter={false}
+            stickyRight={hasStickyRightColumn && i === columns.length - 1}
+            column={column}
+            className={cx(!column.renderWhenScrolling && 'dsg-cell-light')}
+          >
+            {column.title}
+          </Cell>
+        )
+      })}
     </div>
   )
 })

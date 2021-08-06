@@ -1,39 +1,144 @@
 import React, { useState } from 'react'
-import {
-  checkboxColumn,
-  DataSheetGrid,
-  keyColumn,
-  textColumn,
-  Column,
-} from 'react-datasheet-grid'
+import { useEffect } from 'react'
+import { useMemo } from 'react'
+import { DataSheetGrid, keyColumn, textColumn, Column } from 'cjs-size-grid'
 import './style.css'
 
-type Row = {
-  active: boolean
-  firstName: string | null
-  lastName: string | null
-}
-
 function App() {
-  const [data, setData] = useState<Row[]>([
-    { active: true, firstName: 'Elon', lastName: 'Musk' },
-    { active: false, firstName: 'Jeff', lastName: 'Bezos' },
-  ])
-
-  const columns: Column<Row>[] = [
+  const sizeColumns = [
     {
-      ...keyColumn<Row, 'active'>('active', checkboxColumn),
-      title: 'Active',
+      column: 'type',
+      content: '',
     },
     {
-      ...keyColumn<Row, 'firstName'>('firstName', textColumn),
-      title: 'First name',
+      column: 'S',
+      content: 'S',
     },
     {
-      ...keyColumn<Row, 'lastName'>('lastName', textColumn),
-      title: 'Last name',
+      column: 'col-1',
+      content: 'col-1',
+    },
+    {
+      column: 'M',
+      content: 'M',
+    },
+    {
+      column: 'XL',
+      content: 'XL',
+    },
+    {
+      column: 'XXL',
+      content: 'XXL',
     },
   ]
+
+  const sizeData = [
+    [
+      {
+        column: 'type',
+        content: '',
+      },
+      {
+        column: 'S',
+        content: 'S',
+      },
+      {
+        column: 'M',
+        content: 'M',
+      },
+      {
+        column: 'XL',
+        content: 'XL',
+      },
+      {
+        column: 'XXL',
+        content: 'XXL',
+      },
+      {
+        column: 'col-1',
+        content: 'SM',
+      },
+    ],
+    [
+      {
+        column: 'type',
+        content: 'Width',
+      },
+      {
+        column: 'S',
+        content: '20',
+      },
+      {
+        column: 'M',
+        content: '20',
+      },
+      {
+        column: 'XL',
+        content: '20',
+      },
+      {
+        column: 'XXL',
+        content: '20',
+      },
+      {
+        column: 'col-1',
+        content: '21',
+      },
+    ],
+    [
+      {
+        column: 'type',
+        content: 'Height',
+      },
+      {
+        column: 'S',
+        content: '30',
+      },
+      {
+        column: 'M',
+        content: '30',
+      },
+      {
+        column: 'XL',
+        content: '30',
+      },
+      {
+        column: 'XXL',
+        content: '30',
+      },
+      {
+        column: 'col-1',
+        content: '2321',
+      },
+    ],
+  ]
+
+  const [gridData, setGridData] = useState<Record<string, any>[]>([])
+
+  const [gridColumns, setGridColumns] =
+    useState<Array<Record<string, any>>>(sizeColumns)
+
+  useEffect(() => {
+    const initData: Array<Record<string, any>> = []
+    sizeData.forEach((row) => {
+      const rowData: Record<string, any> = {}
+      row.forEach((cell) => {
+        rowData[`${cell.column}`] = cell.content
+      })
+      initData.push(rowData)
+    })
+
+    setGridData(initData)
+  }, [])
+
+  const columns: Column<any, any>[] = useMemo(() => {
+    return gridColumns.map((item) => {
+      return {
+        ...keyColumn(item.column, textColumn),
+        title: item.column,
+      }
+    })
+  }, [gridColumns])
 
   return (
     <div
@@ -44,7 +149,30 @@ function App() {
         background: '#f3f3f3',
       }}
     >
-      <DataSheetGrid data={data} onChange={setData} columns={columns} />
+      <button
+        onClick={() => {
+          console.log(gridData)
+        }}
+      >
+        保存
+      </button>
+      <DataSheetGrid
+        data={gridData}
+        onChange={setGridData}
+        columns={columns}
+        onColumnChange={(value) => {
+          const newColumns: Array<Record<string, any>> = []
+          value.forEach((item, index) => {
+            if (index !== 0) {
+              newColumns.push({
+                column: item.title,
+                content: item.title,
+              })
+            }
+          })
+          setGridColumns(newColumns)
+        }}
+      />
     </div>
   )
 }

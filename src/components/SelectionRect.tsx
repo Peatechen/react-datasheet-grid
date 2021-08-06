@@ -151,15 +151,7 @@ export const SelectionRect = React.memo(() => {
             width: selectionRect?.width ?? activeCellRect?.width,
             height: dataLength * rowHeight + headerRowHeight,
           }}
-        >
-          <div
-            className={cx(
-              'dsg-selection-col-marker',
-              selectionIsDisabled && 'dsg-selection-col-marker-disabled'
-            )}
-            style={{ top: headerRowHeight }}
-          />
-        </div>
+        ></div>
       )}
       {(selectionRect || activeCellRect) && (
         <div
@@ -169,15 +161,7 @@ export const SelectionRect = React.memo(() => {
             height: selectionRect?.height ?? activeCellRect?.height,
             width: contentWidth ? contentWidth : '100%',
           }}
-        >
-          <div
-            className={cx(
-              'dsg-selection-row-marker',
-              selectionIsDisabled && 'dsg-selection-row-marker-disabled'
-            )}
-            style={{ left: columnWidths[0] }}
-          />
-        </div>
+        ></div>
       )}
       {activeCellRect && activeCell && (
         <div

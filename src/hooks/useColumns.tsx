@@ -16,7 +16,7 @@ export const useColumns = <T extends any>(
   return useMemo<Column<T, any>[]>(() => {
     const partialColumns: Partial<Column<T, any>>[] = [
       {
-        width: '0 0 40px',
+        width: '0 0 0px',
         minWidth: 0,
         title: <div className="dsg-corner-indicator" />,
         component: defaultGutterComponent,

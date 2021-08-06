@@ -52,6 +52,9 @@ const RowComponent = React.memo(
     return (
       <div className="dsg-row" style={style}>
         {columns.map((column, i) => {
+          if (i === 0) {
+            return <div style={{ display: 'none' }}></div>
+          }
           const Component = column.component
 
           const disabled =
@@ -62,7 +65,7 @@ const RowComponent = React.memo(
           return (
             <Cell
               key={i}
-              gutter={i === 0}
+              gutter={false}
               disabled={disabled}
               stickyRight={hasStickyRightColumn && i === columns.length - 1}
               column={column}
