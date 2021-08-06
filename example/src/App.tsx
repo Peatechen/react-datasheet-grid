@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 import { useEffect } from 'react'
 import { useMemo } from 'react'
-import { DataSheetGrid, keyColumn, textColumn, Column } from 'cjs-size-grid'
+import {
+  DataSheetGrid,
+  keyColumn,
+  textColumn,
+  Column,
+} from 'react-datasheet-grid'
 import './style.css'
 
 function App() {
@@ -140,6 +145,8 @@ function App() {
     })
   }, [gridColumns])
 
+  const [selectable, setSelectable] = useState(true)
+
   return (
     <div
       style={{
@@ -156,9 +163,18 @@ function App() {
       >
         保存
       </button>
+      <label>是否可选</label>
+      <input
+        type="checkbox"
+        checked={selectable}
+        onChange={(e) => {
+          setSelectable(e.target.checked)
+        }}
+      ></input>
       <DataSheetGrid
         data={gridData}
-        onChange={setGridData}
+        selectable={selectable}
+        // onChange={setGridData}
         columns={columns}
         onColumnChange={(value) => {
           const newColumns: Array<Record<string, any>> = []

@@ -51,6 +51,7 @@ export const DataSheetGrid = React.memo(
     onColumnChange = DEFAULT_ON_COLUMN_CHANGE,
     columns: rawColumns = DEFAULT_COLUMNS,
     rowHeight = 40,
+    selectable = true,
     headerRowHeight = 0,
     gutterColumn,
     stickyRightColumn,
@@ -1072,6 +1073,9 @@ export const DataSheetGrid = React.memo(
 
     const onContextMenu = useCallback(
       (event: MouseEvent) => {
+        if (!selectable) {
+          return
+        }
         const clickInside =
           innerRef.current?.contains(event.target as Node) || false
 
@@ -1090,11 +1094,14 @@ export const DataSheetGrid = React.memo(
           event.preventDefault()
         }
       },
-      [getCursorIndex, activeCell, editing]
+      [selectable, getCursorIndex, activeCell, editing]
     )
     useDocumentEventListener('contextmenu', onContextMenu)
 
     useEffect(() => {
+      if (!selectable) {
+        return
+      }
       const items: ContextMenuItem[] = []
 
       if (selection?.max.row !== undefined) {
@@ -1166,6 +1173,7 @@ export const DataSheetGrid = React.memo(
     }, [
       activeCell?.row,
       deleteRows,
+      selectable,
       duplicateRows,
       insertRowAfter,
       insertRowBefore,
@@ -1237,8 +1245,10 @@ export const DataSheetGrid = React.memo(
         <div
           tabIndex={rawColumns.length && data.length ? 0 : undefined}
           onFocus={(e) => {
-            e.target.blur()
-            setActiveCell({ col: 0, row: 0 })
+            if (selectable) {
+              e.target.blur()
+              setActiveCell({ col: 0, row: 0 })
+            }
           }}
         />
         <HeaderContext.Provider value={headerContext}>
@@ -1254,7 +1264,7 @@ export const DataSheetGrid = React.memo(
               itemData={itemData}
               outerRef={outerRef}
               innerRef={innerRef}
-              innerElementType={InnerContainer}
+              innerElementType={selectable ? InnerContainer : undefined}
               children={Row}
               useIsScrolling={columns.some(
                 ({ renderWhenScrolling }) => !renderWhenScrolling
@@ -1265,11 +1275,13 @@ export const DataSheetGrid = React.memo(
         <div
           tabIndex={rawColumns.length && data.length ? 0 : undefined}
           onFocus={(e) => {
-            e.target.blur()
-            setActiveCell({
-              col: columns.length - (hasStickyRightColumn ? 3 : 2),
-              row: data.length - 1,
-            })
+            if (selectable) {
+              e.target.blur()
+              setActiveCell({
+                col: columns.length - (hasStickyRightColumn ? 3 : 2),
+                row: data.length - 1,
+              })
+            }
           }}
         />
         {contextMenu && contextMenuItems.length > 0 && (

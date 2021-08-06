@@ -151,6 +151,7 @@ export type DataSheetGridProps<T> = {
   height?: number
   rowHeight?: number
   headerRowHeight?: number
+  selectable?: boolean
   addRowsComponent?: (props: AddRowsComponentProps) => JSX.Element
   createRow?: () => T
   duplicateRow?: ({ rowData }: { rowData: T }) => T

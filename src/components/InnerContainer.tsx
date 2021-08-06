@@ -1,5 +1,4 @@
 import React from 'react'
-import { HeaderRow } from './HeaderRow'
 import { SelectionRect } from './SelectionRect'
 
 export const InnerContainer = React.forwardRef<
@@ -8,7 +7,6 @@ export const InnerContainer = React.forwardRef<
 >(({ children, ...rest }, ref) => {
   return (
     <div ref={ref} {...rest}>
-      {/* <HeaderRow /> */}
       {children}
       <SelectionRect />
     </div>
